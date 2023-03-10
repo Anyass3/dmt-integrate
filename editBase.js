@@ -24,7 +24,7 @@ if (parentFolder1 != parentFolder2) {
 //console.log(parentFolder);
 
 //'dmt/settings.json'
-const settingsPath = pathJoin(project_root, 'dmt/settings.json');
+const settingsPath = pathJoin(project_root, 'dmt-install/settings.json');
 
 let settings = fs.readFileSync(settingsPath, 'utf-8');
 settings = JSON.parse(settings);

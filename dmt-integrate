@@ -11,13 +11,13 @@ APP_ROOT_DIR="`pwd`"
 #echo "$SOURCE"
 
 #if [ ! -f "$APP_ROOT_DIR/vite.config.ts" ] || [ ! -d "$APP_ROOT_DIR/dmt" ]; then
-if [ ! -d "$APP_ROOT_DIR/dmt" ]; then
+if [ ! -d "$APP_ROOT_DIR/dmt-install" ]; then
   printf "⚠️  ${RED}Please run inside installable dmt app directory${NC}\n"
   exit
 fi
 
 # dmt-install -> integrate
-if [ -f "./dmt/dmt-integrate" ]; then
+if [ -f "./dmt-install/dmt-integrate" ]; then
   printf "${GREEN}Detected ${MAGENTA}dmt-integrate${NC} script, executing this instead of predefined installer ...${NC}\n"
   printf "${GRAY}${NC}\n"
   ./dmt/dmt-integrate "$@"
@@ -25,10 +25,10 @@ if [ -f "./dmt/dmt-integrate" ]; then
 fi
 
 # legacy
-if [ -f "./dmt/dmt-install" ]; then
+if [ -f "./dmt-install/dmt-install" ]; then
   printf "${GREEN}Detected ${MAGENTA}dmt-install${NC} script, executing this instead of predefined installer ...${NC}\n"
   printf "${GRAY}${NC}\n"
-  ./dmt/dmt-install "$@"
+  ./dmt-install/dmt-install "$@"
   exit
 fi
 
@@ -42,12 +42,12 @@ fi
 
 #cd $SOURCE
 
-SETTINGS="$APP_ROOT_DIR/dmt/settings.json"
+SETTINGS="$APP_ROOT_DIR/dmt-install/settings.json"
 
 if [ ! -f "$SETTINGS" ]; then
   echo $APP_ROOT_DIR
   echo "$(basename $APP_ROOT_DIR)"
-  printf "⚠️  ${RED}Missing ${YELLOW}$(basename $APP_ROOT_DIR)/dmt/settings.json ${RED}file${NC}\n"
+  printf "⚠️  ${RED}Missing ${YELLOW}$(basename $APP_ROOT_DIR)/dmt-install/settings.json ${RED}file${NC}\n"
   exit
 fi
 
@@ -57,7 +57,8 @@ cat "$SETTINGS"
 # variables
 APP_BASE="$(node -pe 'JSON.parse(process.argv[1]).app_base' "$(cat $SETTINGS)")"
 BUILD="$(node -pe 'JSON.parse(process.argv[1]).build' "$(cat $SETTINGS)")"
-HOOK="$(node -pe 'JSON.parse(process.argv[1]).hook' "$(cat $SETTINGS)")"
+#HOOK="$(node -pe 'JSON.parse(process.argv[1]).hook' "$(cat $SETTINGS)")"
+HOOK="dmt"
 TARGET="$(node -pe 'JSON.parse(process.argv[1]).target' "$(cat $SETTINGS)")"
 
 if [ "$APP_BASE" == "undefined" ]; then
@@ -109,34 +110,39 @@ else
       exit
     fi
 
-    SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
-    # sync frontend
+    # sync static gui
     if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
-      mkdir -p "$DMT_APPS_TARGET/$APP_BASE/gui"; cd $_
+      SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
+      mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
       dirsync "$SOURCE_PUBLIC" .
     fi
 
     # DMT-APPS sync
     SOURCE_HOOK="${APP_ROOT_DIR}/${HOOK}"
     # sync backend
-    if [ "$HOOK" != "undefined" ] && [ -d $SOURCE_HOOK ]; then
-      mkdir -p "$DMT_APPS_TARGET/${APP_BASE}"; cd $_
+    #if [ "$HOOK" != "undefined" ] && [ -d $SOURCE_HOOK ]; then
+    if [ -d $SOURCE_HOOK ]; then
+      mkdir -p "$DMT_APPS_TARGET/${APP_BASE}/dmt"; cd $_
       # todo: think about if we really need to exclude dmt dir here
-      dirsync --exclude dmt --exclude gui --exclude node_modules "$SOURCE_HOOK" .
+      #dirsync --exclude dmt-install --exclude dmt --exclude gui --exclude node_modules "$SOURCE_HOOK" .
+      dirsync "$SOURCE_HOOK" .
     fi
 
-    if [ -d "${APP_ROOT_DIR}/dmt" ]; then
-      cp -r "${APP_ROOT_DIR}/dmt" .
-    fi
-
-    if [ -f "./dmt/dmt-customize" ]; then
+    if [ -f "${APP_ROOT_DIR}/dmt-install/dmt-customize" ]; then
+      cp -r "${APP_ROOT_DIR}/dmt-install" .
       printf "Detected ${YELLOW}dmt-customize${NC} script, executing ...\n"
       ./dmt/dmt-customize
+      rm -rf dmt-install
     fi
 
-    if [ -d "dmt" ]; then
-      rm -rf dmt
-    fi
+    # if [ -f "./dmt-install/dmt-customize" ]; then
+    #   printf "Detected ${YELLOW}dmt-customize${NC} script, executing ...\n"
+    #   ./dmt/dmt-customize
+    # fi
+
+    # if [ -d "dmt-install" ]; then
+    #   rm -rf dmt-install
+    # fi
 
     pnpm install
     dmt restart
@@ -148,15 +154,15 @@ else
 
     exit
 
-    node dmt/editAppHtml.cjs
+    node dmt-install/editAppHtml.cjs
 
     # build
     npm run build
 
     # after build scripts
-    if [ -f dmt/editManifest.cjs ]; then node dmt/editManifest.cjs; fi
-    node dmt/resetAppHtml.cjs
-    node dmt/resetBase.cjs
+    if [ -f dmt-install/editManifest.cjs ]; then node dmt-install/editManifest.cjs; fi
+    node dmt-install/resetAppHtml.cjs
+    node dmt-install/resetBase.cjs
 
 
     printf "${GREEN}✓ Updated ~/.dmt/apps${NC}\n"
