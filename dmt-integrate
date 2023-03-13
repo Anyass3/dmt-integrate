@@ -110,7 +110,9 @@ else
     if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
       SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
       mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
-      dirsync --exclude dmt "$SOURCE_PUBLIC" .
+
+      dirsync --exclude dmt --exclude dmt-install "$SOURCE_PUBLIC" .
+      # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
     fi
 
     # sync hook
