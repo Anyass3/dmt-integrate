@@ -34,3 +34,8 @@ export async function init(program) {
 If app has `index.html` then directory is served statically.
 
 This work with SvelteKit and other apps that use express-compatible server middleware.
+
+### special options
+
+`dmt integrate --sync` — will only sync directories without building or running `dmt-customize` (if present)
+`dmt integrate --reset` — will first delete the target app directory if it exists instead of syncing over it
