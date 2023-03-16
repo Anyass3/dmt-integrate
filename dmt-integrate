@@ -1,11 +1,15 @@
 #!/bin/bash
 
-source ~/.dmt/etc/.bash_aliases_bundle # dirsync, colors
+source ~/.dmt/etc/.bash_aliases_bundle # dirsync, colors, dmt_def_reader
 
 APP_ROOT_DIR="`pwd`"
 
 if [ "$1" == "--sync" ]; then
   SYNC_ONLY=true
+fi
+
+if [ "$1" == "--reset" ]; then
+  RESET=true
 fi
 
 if [ "$SYNC_ONLY" != true ]; then
@@ -27,12 +31,11 @@ if [ -f "./dmt-install/dmt-install" ]; then
   exit
 fi
 
-SETTINGS="$APP_ROOT_DIR/dmt-install/settings.json"
+SETTINGS="$APP_ROOT_DIR/dmt-install/settings.def"
 
 if [ ! -f "$SETTINGS" ]; then
-  echo $APP_ROOT_DIR
   echo "$(basename $APP_ROOT_DIR)"
-  printf "⚠️  ${RED}Missing ${YELLOW}$(basename $APP_ROOT_DIR)/dmt-install/settings.json ${RED}file${NC}\n"
+  printf "⚠️  ${RED}Missing ${YELLOW}$(basename $APP_ROOT_DIR)/dmt-install/settings.def ${RED}file${NC}\n"
   exit
 fi
 
@@ -43,25 +46,34 @@ fi
 
 # variables
 
-APP_BASE="$(node -pe 'JSON.parse(process.argv[1]).app_base' "$(cat $SETTINGS)")"
-BUILD="$(node -pe 'JSON.parse(process.argv[1]).build' "$(cat $SETTINGS)")"
-TARGET="$(node -pe 'JSON.parse(process.argv[1]).target' "$(cat $SETTINGS)")"
+APP_BASE='undefined'
+dmt_def_reader APP_BASE "$SETTINGS" "base"
+
+BUILD='undefined'
+dmt_def_reader BUILD "$SETTINGS" "build"
+
+TARGET='undefined'
+dmt_def_reader TARGET "$SETTINGS" "target"
+
+# APP_BASE="$(node -pe 'JSON.parse(process.argv[1]).base' "$(cat $SETTINGS)")"
+# BUILD="$(node -pe 'JSON.parse(process.argv[1]).build' "$(cat $SETTINGS)")"
+# TARGET="$(node -pe 'JSON.parse(process.argv[1]).target' "$(cat $SETTINGS)")"
 
 HOOK="dmt"
 
 if [ "$APP_BASE" == "undefined" ]; then
-  printf "${RED}app_base not set${NC}\n"
+  printf "${RED}base not set${NC}\n"
   exit
 fi
 
 # dmt user apps dir
 DMT_APPS_TARGET="$HOME/.dmt/user/apps"
 
-if [ "$TARGET" == "here" ]; then
+if [ "$TARGET" == "device" ]; then
   DMT_APPS_TARGET="$HOME/.dmt-here/apps"
 fi
 
-if [ "$TARGET" == "main" ]; then
+if [ "$TARGET" == "system" ]; then
   DMT_APPS_TARGET="$HOME/.dmt/apps"
 fi
 
@@ -70,12 +82,12 @@ mkdir -p "$DMT_APPS_TARGET"
 INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # echo
-# printf "app_base: ${YELLOW}${APP_BASE}${NC}\n"
+# printf "base: ${YELLOW}${APP_BASE}${NC}\n"
 
 # sync
 if [ $APP_BASE = my-app-base ]; then
 
-  printf "${RED}Please open setting.json and change app_base to yours! "
+  printf "${RED}Please open setting.json and change base to yours! "
   echo ''
   echo 'Not Successful'
 
@@ -83,7 +95,7 @@ else
     if [ "$SYNC_ONLY" != true ]; then
       # before build
       echo
-      printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
+      printf "${GREEN}Changing base in svelte configuration:${NC}\n"
       # setBase
       node $INTEGRATE/editBase.js "$APP_ROOT_DIR"
 
@@ -105,14 +117,30 @@ else
       node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
     fi
 
+    if [ "$RESET" == true ]; then
+      if [ -d "$DMT_APPS_TARGET/$APP_BASE" ]; then
+        echo
+        printf "${MAGENTA}Removing the entire target directory ${YELLOW}$DMT_APPS_TARGET/$APP_BASE ${MAGENTA}before installing again (because of ${YELLOW}--reset ${MAGENTA}option)${NC}\n"
+        echo
+        rm -rf "$DMT_APPS_TARGET/$APP_BASE"
+      fi
+    fi
+
     # sync frontend
 
     if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
       SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
+
       mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
 
-      dirsync --exclude dmt --exclude dmt-install "$SOURCE_PUBLIC" .
+      dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" .
       # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
+
+      # ⚠️ if from some point on node_modules are not produced anymore
+      # this won't get deleted because we ignore them... so they are not always deleted and resynced over
+      # with said downside of staying there if "pnpm install" is later removed from dmt-customize
+      # at this point it's best to remove the entire app from target directory and reinstall afresh
+      # (--reset option does that)
     fi
 
     # sync hook
