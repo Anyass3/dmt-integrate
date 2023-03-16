@@ -46,8 +46,7 @@ fi
 APP_BASE="$(node -pe 'JSON.parse(process.argv[1]).app_base' "$(cat $SETTINGS)")"
 BUILD="$(node -pe 'JSON.parse(process.argv[1]).build' "$(cat $SETTINGS)")"
 TARGET="$(node -pe 'JSON.parse(process.argv[1]).target' "$(cat $SETTINGS)")"
-
-HOOK="dmt"
+HOOK="$(node -pe 'JSON.parse(process.argv[1]).target||"dmt"' "$(cat $SETTINGS)")"
 
 if [ "$APP_BASE" == "undefined" ]; then
   printf "${RED}app_base not set${NC}\n"
