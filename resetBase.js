@@ -1,5 +1,5 @@
 import fs from 'fs';
-//const fs = require('fs');
+
 import { join as pathJoin } from 'path';
 
 import colors from './colors.js';
@@ -14,7 +14,6 @@ settings = JSON.parse(settings);
 
 const base = pathJoin('/', settings.app_base);
 
-//const AddedConfig = `[\\t\\n\\ ]*paths\\:[\\ ]{[\\t\\n\\ ]*assets:[\\ ]*\\'${app_base}\\'\\,[\\t\\n\\ ]*base:[\\ ]*\\'${app_base}\\'[\\t\\n\\ ]*\\}[\\ ]*\\,[\\t\\n\\ ]*`;
 const AddedConfig = `[\\t\\n\\ ]*paths\\:[\\ ]{[\\t\\n\\ ]*base:[\\ ]*\\'${base}\\'[\\t\\n\\ ]*\\}[\\ ]*\\,[\\t\\n\\ ]*`;
 
 const restore = filePath => {
