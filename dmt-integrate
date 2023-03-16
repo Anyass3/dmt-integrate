@@ -57,7 +57,7 @@ fi
 # dmt user apps dir
 DMT_APPS_TARGET="$HOME/.dmt/user/apps"
 
-if [ "$TARGET" == "here" ]; then
+if [ "$TARGET" == "device" ]; then
   DMT_APPS_TARGET="$HOME/.dmt-here/apps"
 fi
 
@@ -73,7 +73,7 @@ INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # printf "app_base: ${YELLOW}${APP_BASE}${NC}\n"
 
 # sync
-if [ $APP_BASE = my-app-base ]; then
+if [ $APP_BASE = "" ]; then
 
   printf "${RED}Please open setting.json and change app_base to yours! "
   echo ''
