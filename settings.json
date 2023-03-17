@@ -1,6 +1,0 @@
-{
-    "app_base": "your-app-base",
-    "build": "build",
-    "hook": "dmt",
-    "target": "user"
-}
