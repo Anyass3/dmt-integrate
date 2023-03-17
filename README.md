@@ -1,12 +1,20 @@
 ## DMT APP INSTALL
 
-Run `dmt integrate` inside an _installable dmt app directory_.
+Run `dmt integrate` inside an _installable DMT app directory_.
 
-This command will look into `dmt-install` directory and find `settings.json` and `dmt-customize` script (optional) or `dmt-install` script.
+This will install or **integrate the app into DMT ENGINE**. It is not called simply "dmt install" because this would mean installing the DMT ENGINE somewhere, to avoid confusion and be even more descriptive we call installing apps into the engine "to integrate".
+
+See [svelte-demo](https://github.com/dmtsys/svelte-demo) for a nice example of a simple DMT-installable app.
+
+### How it works?
+
+`dmt integrate` command will look into `dmt-install` subdirectory of installable app and find `settings.def` and `dmt-customize` script (optional) or `dmt-install` script.
 
 If `dmt-install/dmt-install` script is present then `dmt integrate` only runs this script.
 
-If `settings.def` file is present then app frontend is built accoring to these settings:
+### settings.def
+
+If `settings.def` file is present then app frontend is built according to these settings, for example:
 
 ```
 base: dmt-search
@@ -14,13 +22,17 @@ build: dist
 target: user
 ```
 
-- `app_base` where the app will be mounted on the url path, for example: `localhost:7777/dmt-search`
+- `base` where the app will be mounted on the url path, for example: `localhost:7777/dmt-search`
 - `build` directory with frontend result which is synced into `~/.dmt/user/apps` (user) or `~/.dmt-here/apps` (device)
 - `target` `device` or `user`
 
-If installable app has a `dmt` directory then this is synced to `~/.dmt/user/apps/[app_name]/dmt`. This directory contains `index.js` which is integrated into DMT ENGINE.
+### DMT hook
 
-If there is any other tasks that need to be performed after building the app and syncing over the artefacts and any hook (`dmt` subdir), then these tasks can be specified in `dmt-customize` script which will run at this point. It will run from the perspective of installed app (current directory will be `~/.dmt/user/apps/[app_name]`). See example in [svelte-demo](https://github.com/dmtsys/svelte-demo).
+If installable app has a `dmt` directory then this is synced to `~/.dmt/user/apps/[app_name]/dmt`. This directory contains `index.js` which is integrated into DMT ENGINE. This directory is called DMT hook and should be used for backend logic, not to serve the frontend or things like that (for that use SSR handler).
+
+If there is any other tasks that need to be performed after building the app and syncing over the artefacts and any hook (`dmt` subdir), then these tasks can be specified in `dmt-customize` script which will run at this point. It will run from the perspective of installed app (current directory will be `~/.dmt/user/apps/[app_name]`).
+
+### SSR handler
 
 Installable apps can return ssr handler from `index.js`:
 
@@ -31,11 +43,14 @@ export async function init(program) {
 }
 ```
 
+This works with SvelteKit and other apps that use express-compatible server middleware (see **svelte-demo**).
+
+### Serving static frontends
+
 If app has `index.html` then directory is served statically.
 
-This work with SvelteKit and other apps that use express-compatible server middleware.
+### Special options
 
-### special options
+- `dmt integrate --sync` — will only sync directories without building or running `dmt-customize` (if present)
 
-`dmt integrate --sync` — will only sync directories without building or running `dmt-customize` (if present)
-`dmt integrate --reset` — will first delete the target app directory if it exists instead of syncing over it
+- `dmt integrate --reset` — will first delete the target app directory if it exists instead of syncing over it
