@@ -1,7 +1,6 @@
 {
-    "app_base": "",
-    "manifest": "app.webmanifest",
-    "app_html": "src/app.html",
+    "app_base": "your-app-base",
     "build": "build",
-    "hook": "dmt-hook"
+    "hook": "dmt",
+    "target": "user"
 }

@@ -81,41 +81,40 @@ mkdir -p "$DMT_APPS_TARGET"
 
 INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# echo
-# printf "base: ${YELLOW}${APP_BASE}${NC}\n"
-
 # sync
-if [ $APP_BASE = "" ]; then
+if [ $APP_BASE = your-app-base ]; then
 
   printf "${RED}Please open setting.json and change base to yours! "
   echo ''
   echo 'Not Successful'
+  exit
 
-else
-    if [ "$SYNC_ONLY" != true ]; then
-      # before build
-      echo
-      printf "${GREEN}Changing base in svelte configuration:${NC}\n"
-      # setBase
-      node $INTEGRATE/editBase.js "$APP_ROOT_DIR"
+fi
 
-      # build
-      pnpm build
+if [ "$SYNC_ONLY" != true ]; then
+  # before build
+  echo
+  printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
+  # setBase
+  node $INTEGRATE/editBase.js "$APP_ROOT_DIR"
 
-      # after build
+  # build
+  pnpm build
 
-      if [ $? -ne 0 ]; then # error
-        # resetBase
-        node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
+  # after build
 
-        echo
-        printf "${RED}Build error${NC}\n"
-        exit
-      fi
+  if [ $? -ne 0 ]; then # error
+    # resetBase
+    node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
 
-      # resetBase
-      node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
-    fi
+    echo
+    printf "${RED}Build error${NC}\n"
+    exit
+  fi
+
+  # resetBase
+  node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
+fi
 
     if [ "$RESET" == true ]; then
       if [ -d "$DMT_APPS_TARGET/$APP_BASE" ]; then
@@ -126,75 +125,54 @@ else
       fi
     fi
 
-    # sync frontend
+# sync frontend
 
-    if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
-      SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
+if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
+  SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
 
-      mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
+  mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
 
-      dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" .
-      # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
+  dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" .
+  # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
 
       # ⚠️ if from some point on node_modules are not produced anymore
       # this won't get deleted because we ignore them... so they are not always deleted and resynced over
       # with said downside of staying there if "pnpm install" is later removed from dmt-customize
       # at this point it's best to remove the entire app from target directory and reinstall afresh
       # (--reset option does that)
-    fi
+fi
 
-    # sync hook
+# sync hook
 
-    ORIGIN_HOOK="${APP_ROOT_DIR}/${HOOK}"
-    INSTALLED_HOOK="$DMT_APPS_TARGET/${APP_BASE}/dmt"
+ORIGIN_HOOK="${APP_ROOT_DIR}/${HOOK}"
+INSTALLED_HOOK="$DMT_APPS_TARGET/${APP_BASE}/dmt"
 
-    if [ -d $ORIGIN_HOOK ]; then
-      mkdir -p "$INSTALLED_HOOK"; cd $_
-      dirsync "$ORIGIN_HOOK" .
-    elif [ -d "$INSTALLED_HOOK" ]; then # hook was deleted
-      rm -rf "$INSTALLED_HOOK"
-    fi
+if [ -d $ORIGIN_HOOK ]; then
+  mkdir -p "$INSTALLED_HOOK"; cd $_
+  dirsync "$ORIGIN_HOOK" .
+elif [ -d "$INSTALLED_HOOK" ]; then # hook was deleted
+  rm -rf "$INSTALLED_HOOK"
+fi
 
-    if [ "$SYNC_ONLY" != true ]; then
+if [ "$SYNC_ONLY" != true ]; then
 
-      cd "$DMT_APPS_TARGET/$APP_BASE"
+  cd "$DMT_APPS_TARGET/$APP_BASE"
 
-      if [ -f "${APP_ROOT_DIR}/dmt-install/dmt-customize" ]; then
-        cp -r "${APP_ROOT_DIR}/dmt-install" .
-        printf "Detected ${YELLOW}dmt-customize${NC} script, executing ...\n"
-        ./dmt-install/dmt-customize
-        rm -rf dmt-install
-      fi
+  if [ -f "${APP_ROOT_DIR}/dmt-install/dmt-customize" ]; then
+    cp -r "${APP_ROOT_DIR}/dmt-install" .
+    printf "Detected ${YELLOW}dmt-customize${NC} script, executing ...\n"
+    ./dmt-install/dmt-customize
+    rm -rf dmt-install
+  fi
 
-      if [ -f "package.json" ]; then
-        pnpm install
-      fi
+  if [ -f "package.json" ]; then
+    pnpm install
+  fi
 
-      if [ -f "./index.js" ] || [ -f "./dmt/index.js" ]; then
-        dmt restart
-      fi
-
-    fi
-
-    cd "$APP_ROOT_DIR"
-
-    # node dmt-install/editAppHtml.cjs
-
-    # # build
-    # npm run build
-
-    # # after build scripts
-    # if [ -f dmt-install/editManifest.cjs ]; then node dmt-install/editManifest.cjs; fi
-    # node dmt-install/resetAppHtml.cjs
-    # node dmt-install/resetBase.cjs
-
-
-    # printf "${GREEN}✓ Updated ~/.dmt/apps${NC}\n"
-
-    # cd $SOURCE
-
-    # # if we wanted to sync the changes to server then uncomment below and change USERNAME & SERVER_IP
-    # echo 'rsync server'
-    # rsync -azP "$DMT_APPS/$app_base" "USERNAME@SERVER_IP:/home/USERNAME/.dmt/apps/user/$app_base"
+  if [ -f "./index.js" ] || [ -f "./dmt/index.js" ]; then
+    dmt restart
+  fi
 
 fi
+
+cd "$APP_ROOT_DIR"
