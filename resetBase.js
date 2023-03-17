@@ -7,11 +7,11 @@ const args = process.argv.slice(2);
 
 const projectRoot = args[0];
 
-const settingsPath = pathJoin(projectRoot, 'dmt-install/settings.json');
-let settings = fs.readFileSync(settingsPath, 'utf-8');
-settings = JSON.parse(settings);
+const settingsPath = pathJoin(projectRoot, 'dmt-install/settings.def');
 
-const base = pathJoin('/', settings.app_base);
+const appBase = fs.readFileSync(settingsPath, 'utf-8').match(/base: (.*)/)[1];
+
+const base = pathJoin('/', appBase);
 
 const AddedConfig = `[\\t\\n\\ ]*paths\\:[\\ ]{[\\t\\n\\ ]*base:[\\ ]*\\'${base}\\'[\\t\\n\\ ]*\\}[\\ ]*\\,[\\t\\n\\ ]*`;
 

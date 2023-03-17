@@ -8,13 +8,11 @@ const args = process.argv.slice(2);
 
 const projectRoot = args[0];
 
-//'dmt/settings.json'
-const settingsPath = pathJoin(projectRoot, 'dmt-install/settings.json');
+//'dmt/settings.def'
+const settingsPath = pathJoin(projectRoot, 'dmt-install/settings.def');
 
-let settings = fs.readFileSync(settingsPath, 'utf-8');
-settings = JSON.parse(settings);
-
-const base = pathJoin('/', settings.app_base);
+const appBase = fs.readFileSync(settingsPath, 'utf-8').match(/base: (.*)/)[1];
+const base = pathJoin('/', appBase);
 // change this to your app base name
 // ie. the frontend sub-route in which the app should run.
 
