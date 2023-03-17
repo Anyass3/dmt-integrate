@@ -1,11 +1,8 @@
 import fs from 'fs';
 
-//const fs = require('fs');
 import { join as pathJoin, basename } from 'path';
 
 import colors from './colors.js';
-
-//const colors = require('./colors.js');
 
 const args = process.argv.slice(2);
 
@@ -21,7 +18,6 @@ const base = pathJoin('/', settings.app_base);
 // change this to your app base name
 // ie. the frontend sub-route in which the app should run.
 
-//const canEditRe = `paths\\:[\\ ]{[\\t\\n\\ ]*assets:[\\ ]*\\'${app_base}\\'\\,[\\t\\n\\ ]*base:[\\ ]*\\'${app_base}\\'[\\t\\n\\ ]*\\}[\\ ]*\\,`;
 const canEditRe = `paths\\:[\\ ]{[\\t\\n\\ ]*base:[\\ ]*\\'${base}\\'[\\t\\n\\ ]*\\}[\\ ]*\\,`;
 
 function edit(filePath) {
