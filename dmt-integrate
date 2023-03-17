@@ -85,7 +85,7 @@ INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # printf "base: ${YELLOW}${APP_BASE}${NC}\n"
 
 # sync
-if [ $APP_BASE = my-app-base ]; then
+if [ $APP_BASE = "" ]; then
 
   printf "${RED}Please open setting.json and change base to yours! "
   echo ''
