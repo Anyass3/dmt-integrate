@@ -12,8 +12,8 @@ if (!fs.existsSync(join(projectRoot, 'dmt-install'))) {
   fs.mkdirSync(join(projectRoot, 'dmt-install'));
 }
 
-if (!fs.existsSync(join(projectRoot, 'dmt-install/settings.json'))) {
-  fs.copyFileSync(join(_dirname, 'settings.json'), join(projectRoot, 'dmt-install/settings.json'));
+if (!fs.existsSync(join(projectRoot, 'dmt-install/settings.def'))) {
+  fs.copyFileSync(join(_dirname, 'settings.def'), join(projectRoot, 'dmt-install/settings.def'));
 }
 
 console.log(colors.green('initialized dmt install'));
