@@ -90,7 +90,7 @@ mkdir -p "$DMT_APPS_TARGET"
 # sync
 if [ $APP_BASE = your-app-base ]; then
 
-  printf "${RED}Please open setting.json and change base to yours! "
+  printf "${RED}Please open setting.def and change base to yours! "
   echo ''
   echo 'Not Successful'
   exit
