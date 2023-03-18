@@ -1,4 +1,0 @@
-base: your-app-base
-build: build
-target: user
-hook: dmt
