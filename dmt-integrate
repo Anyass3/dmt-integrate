@@ -171,6 +171,15 @@ if [ "$SYNC_ONLY" != true ]; then
     rm -rf dmt-install
   fi
 
+  if [ -f handler.js ]; then
+    echo "
+    export async function init(program) {
+      const { handler } = await import('./handler.js');
+      return { handler };
+    }
+    ">index.js
+  fi
+
   if [ -f "${APP_ROOT_DIR}/dmt-install/package.json" ]; then
     printf "Detected ${YELLOW}package.json${NC} copying ...\n"
     cp "${APP_ROOT_DIR}/dmt-install/package.json" package.json

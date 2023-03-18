@@ -10,6 +10,7 @@ const readline = nodeReadline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
+
 const input = (question) => {
   return new Promise((accept, reject) => {
     try {
@@ -18,8 +19,8 @@ const input = (question) => {
       reject(error);
     }
   })
-
 }
+
 // let appBase = '';
 let settings = '';
 let dmtCustomize = '#!/bin/bash\n';
@@ -46,18 +47,19 @@ for (let question of settingQuestions) {
   }
 };
 
-{
-  const isSveltekit = (await input(colors.blue('Svelte-kit server side app:') + colors.dim(' (y for yes, any other for no) '))).trim();
-  if (isSveltekit == 'y') {
-    dmtCustomize += `\necho "
-export async function init(program) {
-  const { handler } = await import('./handler.js');
-  return { handler };
-}
-">index.js
-  `
-  }
-}
+// {
+//   const isSveltekit = (await input(colors.blue('Svelte-kit server side app:') + colors.dim(' (y for yes, any other for no) '))).trim();
+//   if (isSveltekit == 'y') {
+//     dmtCustomize += `\necho "
+// export async function init(program) {
+//   const { handler } = await import('./handler.js');
+//   return { handler };
+// }
+// ">index.js
+//   `
+//   }
+// }
+
 {
   const packageNeeded = (await input(colors.blue('Generate package.json:') + colors.dim(' (y for yes, any other for no) '))).trim();
   if (packageNeeded == 'y') {
@@ -71,7 +73,9 @@ export async function init(program) {
         "./connectome": "./_dmt_deps/connectome/index.js",
         "./connectome-stores": "./_dmt_deps/connectome-stores/index.js"
       },
-      "dependencies": {}
+      "dependencies": {
+
+      }
     }, null, 4)
   }
 }
