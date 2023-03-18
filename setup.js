@@ -19,7 +19,7 @@ const input = (question) => {
   })
 
 }
-let appBase = '';
+// let appBase = '';
 let settings = '';
 let dmtCustomize = '#!/bin/bash\n';
 let packageJson;
@@ -37,9 +37,9 @@ for (let question of settingQuestions) {
     const key = question[0].split(' ')[0].trim();
     const comment = question[2];
     settings += `${key}:  ${value}  #${comment}\n`;
-    if (key == 'base') {
-      appBase = value;
-    }
+    // if (key == 'base') {
+    //   appBase = value;
+    // }
   } catch (error) {
     console.log(colors.red(error));
   }
@@ -61,7 +61,7 @@ export async function init(program) {
   const packageNeeded = (await input(colors.blue('Generate package.json:') + colors.dim(' (y for yes, any other for no) '))).trim();
   if (packageNeeded == 'y') {
     packageJson = JSON.stringify({
-      "name": appBase || 'dmt',
+      "name": 'dmt',
       "type": "module",
       "exports": {
         "./common": "./_dmt_deps/common/index.js",
