@@ -4,6 +4,7 @@ import nodeReadline from 'readline';
 import { join } from 'path';
 
 import colors from './colors.js';
+import { execSync } from 'child_process';
 
 const readline = nodeReadline.createInterface({
   input: process.stdin,
@@ -85,7 +86,13 @@ if (!fs.existsSync(join(projectRoot, 'dmt-install'))) {
 }
 
 fs.writeFileSync(join(projectRoot, 'dmt-install/settings.def'), settings);
+
 fs.writeFileSync(join(projectRoot, 'dmt-install/dmt-customize'), dmtCustomize);
+try {
+  execSync('chmod +x ' + join(projectRoot, 'dmt-install/dmt-customize'))
+} catch (error) {
+  console.log(colors.red(error))
+}
 
 if (packageJson) {
   fs.writeFileSync(join(projectRoot, 'dmt-install/package.json'), packageJson);
