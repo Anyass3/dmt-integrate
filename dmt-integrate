@@ -166,7 +166,8 @@ if [ "$SYNC_ONLY" != true ]; then
   fi
 
   if [ -f "${APP_ROOT_DIR}/dmt-install/package.json" ]; then
-    cp "${APP_ROOT_DIR}/dmt-install/package.json" .
+    printf "Detected ${YELLOW}package.json${NC} copying ...\n"
+    cp "${APP_ROOT_DIR}/dmt-install/package.json" package.json
     if [ ! -L _dmt_deps ]; then
       ln -s ../_dmt_deps .
     fi
