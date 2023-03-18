@@ -3,13 +3,8 @@ import { join as pathJoin } from 'path';
 
 import colors from './colors.js';
 
-const args = process.argv.slice(2);
-
-const projectRoot = args[0];
-
-const settingsPath = pathJoin(projectRoot, 'dmt-install/settings.def');
-
-const appBase = fs.readFileSync(settingsPath, 'utf-8').match(/base: (.*)/)[1];
+const appBase = process.argv[3];
+const projectRoot = process.argv[2];
 
 const base = pathJoin('/', appBase);
 

@@ -4,17 +4,10 @@ import { join as pathJoin, basename } from 'path';
 
 import colors from './colors.js';
 
-const args = process.argv.slice(2);
+const appBase = process.argv[3];
+const projectRoot = process.argv[2];
 
-const projectRoot = args[0];
-
-//'dmt/settings.def'
-const settingsPath = pathJoin(projectRoot, 'dmt-install/settings.def');
-
-const appBase = fs.readFileSync(settingsPath, 'utf-8').match(/base: (.*)/)[1];
 const base = pathJoin('/', appBase);
-// change this to your app base name
-// ie. the frontend sub-route in which the app should run.
 
 const canEditRe = `paths\\:[\\ ]{[\\t\\n\\ ]*base:[\\ ]*\\'${base}\\'[\\t\\n\\ ]*\\}[\\ ]*\\,`;
 

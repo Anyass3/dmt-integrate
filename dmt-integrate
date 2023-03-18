@@ -1,8 +1,16 @@
 #!/bin/bash
 
-source ~/.dmt/etc/.bash_aliases_bundle # dirsync, colors, dmt_def_reader
 
 APP_ROOT_DIR="`pwd`"
+
+INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+if [ "$1" == "--init" ]; then
+    node $INTEGRATE/setup.js "$APP_ROOT_DIR"
+    exit
+fi
+
+source ~/.dmt/etc/.bash_aliases_bundle # dirsync, colors, dmt_def_reader
 
 if [ "$1" == "--sync" ]; then
   SYNC_ONLY=true
@@ -79,8 +87,6 @@ fi
 
 mkdir -p "$DMT_APPS_TARGET"
 
-INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 # sync
 if [ $APP_BASE = your-app-base ]; then
 
@@ -96,7 +102,7 @@ if [ "$SYNC_ONLY" != true ]; then
   echo
   printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
   # setBase
-  node $INTEGRATE/editBase.js "$APP_ROOT_DIR"
+  node $INTEGRATE/editBase.js "$APP_ROOT_DIR" $APP_BASE
 
   # build
   pnpm build
@@ -105,7 +111,7 @@ if [ "$SYNC_ONLY" != true ]; then
 
   if [ $? -ne 0 ]; then # error
     # resetBase
-    node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
+    node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
 
     echo
     printf "${RED}Build error${NC}\n"
@@ -113,7 +119,7 @@ if [ "$SYNC_ONLY" != true ]; then
   fi
 
   # resetBase
-  node $INTEGRATE/resetBase.js "$APP_ROOT_DIR"
+  node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
 fi
 
     if [ "$RESET" == true ]; then
