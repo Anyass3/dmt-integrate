@@ -98,7 +98,14 @@ if [ $APP_BASE = your-app-base ]; then
 fi
 
 if [ "$SYNC_ONLY" != true ]; then
-  # before build
+
+  if [ -f "${APP_ROOT_DIR}/dmt-install/before-install" ]; then
+    printf "Detected ${YELLOW}before-install${NC} script, executing ...\n"
+    cd $APP_ROOT_DIR
+    ./dmt-install/before-install
+    cd -
+  fi
+  
   echo
   printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
   # setBase
@@ -186,6 +193,13 @@ if [ "$SYNC_ONLY" != true ]; then
     if [ ! -L _dmt_deps ]; then
       ln -s ../_dmt_deps .
     fi
+  fi
+
+  if [ -f "${APP_ROOT_DIR}/dmt-install/after-install" ]; then
+    printf "Detected ${YELLOW}after-install${NC} script, executing ...\n"
+    cd $APP_ROOT_DIR
+    ./dmt-install/after-install
+    cd -
   fi
 
   if [ -f "package.json" ]; then
