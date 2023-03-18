@@ -165,6 +165,13 @@ if [ "$SYNC_ONLY" != true ]; then
     rm -rf dmt-install
   fi
 
+  if [ -f "${APP_ROOT_DIR}/dmt-install/package.json" ]; then
+    cp "${APP_ROOT_DIR}/dmt-install/package.json" .
+    if [ ! -L _dmt_deps ]; then
+      ln -s ../_dmt_deps .
+    fi
+  fi
+
   if [ -f "package.json" ]; then
     pnpm install
   fi
