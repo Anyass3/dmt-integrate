@@ -105,7 +105,7 @@ if [ "$SYNC_ONLY" != true ]; then
     ./dmt-install/before-install
     cd -
   fi
-  
+
   echo
   printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
   # setBase
@@ -129,14 +129,14 @@ if [ "$SYNC_ONLY" != true ]; then
   node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
 fi
 
-    if [ "$RESET" == true ]; then
-      if [ -d "$DMT_APPS_TARGET/$APP_BASE" ]; then
-        echo
-        printf "${MAGENTA}Removing the entire target directory ${YELLOW}$DMT_APPS_TARGET/$APP_BASE ${MAGENTA}before installing again (because of ${YELLOW}--reset ${MAGENTA}option)${NC}\n"
-        echo
-        rm -rf "$DMT_APPS_TARGET/$APP_BASE"
-      fi
-    fi
+if [ "$RESET" == true ]; then
+  if [ -d "$DMT_APPS_TARGET/$APP_BASE" ]; then
+    echo
+    printf "${MAGENTA}Removing the entire target directory ${YELLOW}$DMT_APPS_TARGET/$APP_BASE ${MAGENTA}before installing again (because of ${YELLOW}--reset ${MAGENTA}option)${NC}\n"
+    echo
+    rm -rf "$DMT_APPS_TARGET/$APP_BASE"
+  fi
+fi
 
 # sync frontend
 
@@ -171,13 +171,6 @@ if [ "$SYNC_ONLY" != true ]; then
 
   cd "$DMT_APPS_TARGET/$APP_BASE"
 
-  if [ -f "${APP_ROOT_DIR}/dmt-install/dmt-customize" ]; then
-    cp -r "${APP_ROOT_DIR}/dmt-install" .
-    printf "Detected ${YELLOW}dmt-customize${NC} script, executing ...\n"
-    ./dmt-install/dmt-customize
-    rm -rf dmt-install
-  fi
-
   if [ -f handler.js ]; then
     echo "
     export async function init(program) {
@@ -207,7 +200,10 @@ if [ "$SYNC_ONLY" != true ]; then
   fi
 
   if [ -f "./index.js" ] || [ -f "./dmt/index.js" ]; then
-    dmt restart
+    # dmt restart
+    sleep 5
+    curl "http://127.0.0.1:7777/__dmt__reload?app=$DMT_APPS_TARGET/$APP_BASE"
+    echo ""
   fi
 
 fi
