@@ -145,14 +145,28 @@ if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
 
   mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
 
-  dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" .
-  # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
+  RELATIVE_TARGET="."
 
-      # ⚠️ if from some point on node_modules are not produced anymore
-      # this won't get deleted because we ignore them... so they are not always deleted and resynced over
-      # with said downside of staying there if "pnpm install" is later removed from dmt-customize
-      # at this point it's best to remove the entire app from target directory and reinstall afresh
-      # (--reset option does that)
+  if [ -f "$SOURCE_PUBLIC/handler.js" ]; then
+    RELATIVE_TARGET=$(echo $RANDOM | md5sum | head -c 20)
+  fi
+
+  dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" "$RELATIVE_TARGET"
+
+  if [ -f "$RELATIVE_TARGET/handler.js" ]; then
+    echo "
+    export async function init(program) {
+      const { handler } = await import('./$RELATIVE_TARGET/handler.js');
+      return { handler };
+    }
+    ">index.js
+  fi
+  # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
+  # ⚠️ if from some point on node_modules are not produced anymore
+  # this won't get deleted because we ignore them... so they are not always deleted and resynced over
+  # with said downside of staying there if "pnpm install" is later removed from dmt-customize
+  # at this point it's best to remove the entire app from target directory and reinstall afresh
+  # (--reset option does that)
 fi
 
 # sync hook
@@ -170,15 +184,6 @@ fi
 if [ "$SYNC_ONLY" != true ]; then
 
   cd "$DMT_APPS_TARGET/$APP_BASE"
-
-  if [ -f handler.js ]; then
-    echo "
-    export async function init(program) {
-      const { handler } = await import('./handler.js');
-      return { handler };
-    }
-    ">index.js
-  fi
 
   if [ -f "${APP_ROOT_DIR}/dmt-install/package.json" ]; then
     printf "Detected ${YELLOW}package.json${NC} copying ...\n"
@@ -201,7 +206,6 @@ if [ "$SYNC_ONLY" != true ]; then
 
   if [ -f "./index.js" ] || [ -f "./dmt/index.js" ]; then
     # dmt restart
-    sleep 5
     curl "http://127.0.0.1:7777/__dmt__reload?app=$DMT_APPS_TARGET/$APP_BASE"
     echo ""
   fi
