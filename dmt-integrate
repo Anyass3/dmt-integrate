@@ -143,30 +143,35 @@ fi
 if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
   SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
 
-  mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
+  if [ ! -d "$SOURCE_PUBLIC" ]; then
+    printf "${RED}Warning: ${YELLOW}${SOURCE_PUBLIC} ${RED}is missing, not syncing it.${NC}\n"
+    # this can happen if we use "dmt integrate --sync" before app has been built for the first time or build directory was removed
+  else
+    mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
 
-  RELATIVE_TARGET="."
+    RELATIVE_TARGET="."
 
-  if [ -f "$SOURCE_PUBLIC/handler.js" ]; then
-    RELATIVE_TARGET=$(echo $RANDOM | md5sum | head -c 20)
+    if [ -f "$SOURCE_PUBLIC/handler.js" ]; then
+      RELATIVE_TARGET=$(echo $RANDOM | md5sum | head -c 20)
+    fi
+
+    dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" "$RELATIVE_TARGET"
+
+    if [ -f "$RELATIVE_TARGET/handler.js" ]; then
+      echo "
+      export async function init(program) {
+        const { handler } = await import('./$RELATIVE_TARGET/handler.js');
+        return { handler };
+      }
+      ">index.js
+    fi
+    # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
+    # ⚠️ if from some point on node_modules are not produced anymore
+    # this won't get deleted because we ignore them... so they are not always deleted and resynced over
+    # with said downside of staying there if "pnpm install" is later removed from dmt-customize
+    # at this point it's best to remove the entire app from target directory and reinstall afresh
+    # (--reset option does that)
   fi
-
-  dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" "$RELATIVE_TARGET"
-
-  if [ -f "$RELATIVE_TARGET/handler.js" ]; then
-    echo "
-    export async function init(program) {
-      const { handler } = await import('./$RELATIVE_TARGET/handler.js');
-      return { handler };
-    }
-    ">index.js
-  fi
-  # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
-  # ⚠️ if from some point on node_modules are not produced anymore
-  # this won't get deleted because we ignore them... so they are not always deleted and resynced over
-  # with said downside of staying there if "pnpm install" is later removed from dmt-customize
-  # at this point it's best to remove the entire app from target directory and reinstall afresh
-  # (--reset option does that)
 fi
 
 # sync hook
