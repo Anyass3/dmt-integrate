@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 APP_ROOT_DIR="`pwd`"
 
 INTEGRATE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -47,20 +46,15 @@ if [ ! -f "$SETTINGS" ]; then
   exit
 fi
 
-if [ "$SYNC_ONLY" != true ]; then
-  printf "${YELLOW}Settings for ${CYAN}$(basename $APP_ROOT_DIR)${NC} =${NC}\n"
-  cat "$SETTINGS"
-fi
-
 # variables
 
-APP_BASE='undefined'
+APP_BASE=''
 dmt_def_reader APP_BASE "$SETTINGS" "base"
 
-BUILD='undefined'
+BUILD=''
 dmt_def_reader BUILD "$SETTINGS" "build"
 
-TARGET='undefined'
+TARGET=''
 dmt_def_reader TARGET "$SETTINGS" "target"
 
 # APP_BASE="$(node -pe 'JSON.parse(process.argv[1]).base' "$(cat $SETTINGS)")"
@@ -69,7 +63,7 @@ dmt_def_reader TARGET "$SETTINGS" "target"
 
 HOOK="dmt"
 
-if [ "$APP_BASE" == "undefined" ]; then
+if [ -z "$APP_BASE" ]; then
   printf "${RED}base not set${NC}\n"
   exit
 fi
@@ -88,7 +82,7 @@ fi
 mkdir -p "$DMT_APPS_TARGET"
 
 # sync
-if [ $APP_BASE = your-app-base ]; then
+if [ $APP_BASE = "" ]; then
 
   printf "${RED}Please open setting.def and change base to yours! "
   echo ''
@@ -106,7 +100,6 @@ if [ "$SYNC_ONLY" != true ]; then
     cd -
   fi
 
-  echo
   printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
   # setBase
   node $INTEGRATE/editBase.js "$APP_ROOT_DIR" $APP_BASE
@@ -140,7 +133,7 @@ fi
 
 # sync frontend
 
-if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
+if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
   SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
 
   if [ ! -d "$SOURCE_PUBLIC" ]; then
@@ -149,22 +142,35 @@ if [ "$BUILD" != "undefined" ] && [ -d $SOURCE_PUBLIC ]; then
   else
     mkdir -p "$DMT_APPS_TARGET/$APP_BASE"; cd $_
 
+    # if there is no handler.js we sync into app target root
+    # in case there is handler.js this sync is still useful because it deletes previous code and random dirs
+
+    FILE="build_target.save"
+
+    if [ -f "$FILE" ]; then
+      OLD_TARGET=$(cat "$FILE")
+      if [ -d "$OLD_TARGET" ]; then
+        printf "${GRAY}Deleting previous build target: ${YELLOW}${OLD_TARGET}${NC}\n"
+        rm -rf "$OLD_TARGET"
+      fi
+    fi
+
     RELATIVE_TARGET="."
 
     if [ -f "$SOURCE_PUBLIC/handler.js" ]; then
+      # this enables hot module reloads
       RELATIVE_TARGET=$(echo $RANDOM | md5sum | head -c 20)
+      echo "$RELATIVE_TARGET" > "$FILE"
+
+# ⚠️ keep indentation like this or resulting index.js file will also have indents in it
+echo "export async function init(program) {
+  const { handler } = await import('./$RELATIVE_TARGET/handler.js');
+  return { handler };
+}">index.js
     fi
 
     dirsync --exclude dmt --exclude dmt-install --exclude node_modules "$SOURCE_PUBLIC" "$RELATIVE_TARGET"
 
-    if [ -f "$RELATIVE_TARGET/handler.js" ]; then
-      echo "
-      export async function init(program) {
-        const { handler } = await import('./$RELATIVE_TARGET/handler.js');
-        return { handler };
-      }
-      ">index.js
-    fi
     # sometimes (rarely) build is "." and in these cases we need to exclude dmt and dmt-install
     # ⚠️ if from some point on node_modules are not produced anymore
     # this won't get deleted because we ignore them... so they are not always deleted and resynced over
