@@ -145,21 +145,29 @@ if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
     # if there is no handler.js we sync into app target root
     # in case there is handler.js this sync is still useful because it deletes previous code and random dirs
 
-    FILE="build_target.save"
-
-    if [ -f "$FILE" ]; then
-      OLD_TARGET=$(cat "$FILE")
-      if [ -d "$OLD_TARGET" ]; then
-        printf "${GRAY}Deleting previous build target: ${YELLOW}${OLD_TARGET}${NC}\n"
-        rm -rf "$OLD_TARGET"
-      fi
-    fi
-
     RELATIVE_TARGET="."
 
     if [ -f "$SOURCE_PUBLIC/handler.js" ]; then
+      FILE="build_target.save"
+
       # this enables hot module reloads
       RELATIVE_TARGET=$(echo $RANDOM | md5sum | head -c 20)
+
+      if [ -f "$FILE" ]; then
+        OLD_TARGET=$(cat "$FILE")
+
+        if [ -d "$OLD_TARGET" ]; then
+          printf "${GRAY}Renaming previous build target: ${YELLOW}${OLD_TARGET}${NC}\n"
+
+          # unlikely ...
+          if [ -d "$RELATIVE_TARGET" ]; then
+            rm -rf "$RELATIVE_TARGET"
+          fi
+          mv "$OLD_TARGET" "$RELATIVE_TARGET"
+          #rm -rf "$OLD_TARGET"
+        fi
+      fi
+
       echo "$RELATIVE_TARGET" > "$FILE"
 
 # ⚠️ keep indentation like this or resulting index.js file will also have indents in it
