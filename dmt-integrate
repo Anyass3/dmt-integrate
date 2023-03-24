@@ -138,7 +138,7 @@ if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
   
   SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
 
-  if [ "$BUILD" != "." ]; then
+  if [ "$BUILD" == "." ]; then
     SOURCE_PUBLIC="${APP_ROOT_DIR}"
   fi
 
