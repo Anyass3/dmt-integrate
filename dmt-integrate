@@ -100,6 +100,21 @@ if [ "$SYNC_ONLY" != true ]; then
     cd -
   fi
 
+fi
+
+if [ "$RESET" == true ]; then
+  if [ -d "$DMT_APPS_TARGET/$APP_BASE" ]; then
+    echo
+    printf "${MAGENTA}Removing the entire target directory ${YELLOW}$DMT_APPS_TARGET/$APP_BASE ${MAGENTA}before installing again (because of ${YELLOW}--reset ${MAGENTA}option)${NC}\n"
+    echo
+    rm -rf "$DMT_APPS_TARGET/$APP_BASE"
+  fi
+fi
+
+# sync frontend
+
+if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
+
   printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
   # setBase
   node $INTEGRATE/editBase.js "$APP_ROOT_DIR" $APP_BASE
@@ -120,21 +135,12 @@ if [ "$SYNC_ONLY" != true ]; then
 
   # resetBase
   node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
-fi
-
-if [ "$RESET" == true ]; then
-  if [ -d "$DMT_APPS_TARGET/$APP_BASE" ]; then
-    echo
-    printf "${MAGENTA}Removing the entire target directory ${YELLOW}$DMT_APPS_TARGET/$APP_BASE ${MAGENTA}before installing again (because of ${YELLOW}--reset ${MAGENTA}option)${NC}\n"
-    echo
-    rm -rf "$DMT_APPS_TARGET/$APP_BASE"
-  fi
-fi
-
-# sync frontend
-
-if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
+  
   SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
+
+  if [ "$BUILD" != "." ]; then
+    SOURCE_PUBLIC="${APP_ROOT_DIR}"
+  fi
 
   if [ ! -d "$SOURCE_PUBLIC" ]; then
     printf "${RED}Warning: ${YELLOW}${SOURCE_PUBLIC} ${RED}is missing, not syncing it.${NC}\n"
