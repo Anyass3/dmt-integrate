@@ -82,15 +82,6 @@ fi
 mkdir -p "$DMT_APPS_TARGET"
 
 # sync
-if [ $APP_BASE = "" ]; then
-
-  printf "${RED}Please open setting.def and change base to yours! "
-  echo ''
-  echo 'Not Successful'
-  exit
-
-fi
-
 if [ "$SYNC_ONLY" != true ]; then
 
   if [ -f "${APP_ROOT_DIR}/dmt-install/before-install" ]; then
