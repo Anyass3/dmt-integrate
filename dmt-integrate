@@ -113,7 +113,7 @@ fi
 
 # sync frontend
 
-if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
+if [ -n "$BUILD" ]; then
 
   printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
   # setBase
@@ -138,7 +138,7 @@ if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
   
   SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
 
-  if [ "$BUILD" != "." ]; then
+  if [ "$BUILD" == "." ]; then
     SOURCE_PUBLIC="${APP_ROOT_DIR}"
   fi
 
@@ -157,7 +157,7 @@ if [ -n "$BUILD" ] && [ -d $SOURCE_PUBLIC ]; then
       FILE="build_target.save"
 
       # this enables hot module reloads
-      RELATIVE_TARGET=$(echo $RANDOM | md5sum | head -c 20)
+      RELATIVE_TARGET=$(echo $RANDOM)
 
       if [ -f "$FILE" ]; then
         OLD_TARGET=$(cat "$FILE")
