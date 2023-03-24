@@ -23,7 +23,7 @@ const input = (question) => {
 
 // let appBase = '';
 let settings = '';
-let dmtCustomize = '#!/bin/bash\n';
+let dmtBashDefault = '#!/bin/bash\n';
 let packageJson;
 
 const getQuestion = (question, _default, comment) => `${colors.blue(question)}\n${colors.dim(comment)}\n: ${colors.dim('(' + _default + ')')} `;
@@ -46,19 +46,6 @@ for (let question of settingQuestions) {
     console.log(colors.red(error));
   }
 };
-
-// {
-//   const isSveltekit = (await input(colors.blue('Svelte-kit server side app:') + colors.dim(' (y for yes, any other for no) '))).trim();
-//   if (isSveltekit == 'y') {
-//     dmtCustomize += `\necho "
-// export async function init(program) {
-//   const { handler } = await import('./handler.js');
-//   return { handler };
-// }
-// ">index.js
-//   `
-//   }
-// }
 
 {
   const packageNeeded = (await input(colors.blue('Generate package.json:') + colors.dim(' (y for yes, any other for no) '))).trim();
@@ -91,11 +78,13 @@ if (!fs.existsSync(join(projectRoot, 'dmt-install'))) {
 
 fs.writeFileSync(join(projectRoot, 'dmt-install/settings.def'), settings);
 
-fs.writeFileSync(join(projectRoot, 'dmt-install/dmt-customize'), dmtCustomize);
-try {
-  execSync('chmod +x ' + join(projectRoot, 'dmt-install/dmt-customize'))
-} catch (error) {
-  console.log(colors.red(error))
+for (const script of ['before-install', 'after-install']) {
+  fs.writeFileSync(join(projectRoot, 'dmt-install/' + script), dmtBashDefault);
+  try {
+    execSync('chmod +x ' + join(projectRoot, 'dmt-install/' + script))
+  } catch (error) {
+    console.log(colors.red(error))
+  }
 }
 
 if (packageJson) {
