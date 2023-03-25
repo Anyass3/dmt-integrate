@@ -209,13 +209,6 @@ if [ "$SYNC_ONLY" != true ]; then
     fi
   fi
 
-  if [ -f "${APP_ROOT_DIR}/dmt-install/after-install" ]; then
-    printf "Detected ${YELLOW}after-install${NC} script, executing ...\n"
-    cd $APP_ROOT_DIR
-    ./dmt-install/after-install
-    cd -
-  fi
-
   if [ -f "package.json" ]; then
     pnpm install
   fi
@@ -224,6 +217,13 @@ if [ "$SYNC_ONLY" != true ]; then
     # dmt restart
     curl "http://127.0.0.1:7777/__dmt__reload?app=$DMT_APPS_TARGET/$APP_BASE"
     echo ""
+  fi
+
+  if [ -f "${APP_ROOT_DIR}/dmt-install/after-install" ]; then
+    printf "Detected ${YELLOW}after-install${NC} script, executing ...\n"
+    cd $APP_ROOT_DIR
+    ./dmt-install/after-install
+    cd -
   fi
 
 fi
