@@ -106,26 +106,28 @@ fi
 
 if [ -n "$BUILD" ]; then
 
-  printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
-  # setBase
-  node $INTEGRATE/editBase.js "$APP_ROOT_DIR" $APP_BASE
+  if [ "$SYNC_ONLY" != true ]; then
+    printf "${GREEN}Changing app_base in svelte configuration:${NC}\n"
+    # setBase
+    node $INTEGRATE/editBase.js "$APP_ROOT_DIR" $APP_BASE
 
-  # build
-  pnpm build
+    # build
+    pnpm build
 
-  # after build
+    # after build
 
-  if [ $? -ne 0 ]; then # error
+    if [ $? -ne 0 ]; then # error
+      # resetBase
+      node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
+
+      echo
+      printf "${RED}Build error${NC}\n"
+      exit
+    fi
+
     # resetBase
     node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
-
-    echo
-    printf "${RED}Build error${NC}\n"
-    exit
   fi
-
-  # resetBase
-  node $INTEGRATE/resetBase.js "$APP_ROOT_DIR" $APP_BASE
   
   SOURCE_PUBLIC="${APP_ROOT_DIR}/${BUILD}"
 
